@@ -7,7 +7,9 @@ export default {
       offshore: 0,
       records: [],
       buypots: 0,
-      maxpots:6
+      pots:6,
+      tomorrow: new Date('03/01/2015'),
+      money: 0
     }
   },
   methods: {
@@ -35,23 +37,50 @@ export default {
         offshore: this.offshore,
         "additionalpots": this.buypots
       }
-      fetch("http://127.0.0.1:3000/",{
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        this.records.push(data)
-        this.maxpots = data.pots;
-        }
-      );
-    }
+     
+
+      this.tomorrow.setDate(this.tomorrow.getDate()+1);
+      const input = data;
+      let randWeather = Math.floor(Math.random() * 6) + 1;
+      if(this.tomorrow.getDay() === 6) {
+          this.tomorrow.setDate(this.tomorrow.getDate()+2);
+          this.money = this.money - 80;
+      }
+      let weather = "good";
+      let inshoretotal = 0;
+      let offshoretotal = 0;
+      let pots=this.pots;
+      if (randWeather === 6) {
+          weather = "bad";
+          inshoretotal = +input.inshore * this.inshore;
+          pots = pots - +input.offshore;
+
+      } else {
+          inshoretotal = +input.inshore * + this.inshore;
+          offshoretotal = +input.offshore * + this.offshore;
+      }
+
+      const costofadditionalpots = +input.additionalpots * 6;
+
+      this.money = this.money + inshoretotal + offshoretotal - costofadditionalpots;
+      this.pots = this.pots + +input.additionalpots;
+      let result = {
+          money: +(this.money),
+          pots: this.pots,
+          randWeather,
+          weather,
+          day: this.tomorrow.toLocaleString(
+              'default', {weekday: 'long'}
+            )
+      };
+      console.log(result)
+
+      this.records.push(result)
+      this.maxpots = this.pots;
+    }  
   }
 }
+
 </script>
 
 <template>
